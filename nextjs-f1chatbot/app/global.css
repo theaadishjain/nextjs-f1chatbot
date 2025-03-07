@@ -1,51 +1,141 @@
-*{
-    font-family: Verdana, Tahoma, sans-serif;
+/* Base Reset */
+* {
+    font-family: "Verdana", Tahoma, sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-body{
+/* Fullscreen Layout */
+body {
     margin: 0;
-    padding:0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-image: url("assets/bg.jpg");
+    background: url("assets/bg.jpg") no-repeat center center/cover;
+    background-attachment: fixed;
+    overflow: hidden;
 }
 
-main{
+/* Chat Container */
+main {
     width: 80vh;
     height: 80vh;
-    background-color: linear-gradient(to bottom,#f8f8f8,#cfcfcf);
+    background: linear-gradient(145deg, #1a1a2e, #16213e);
     border-radius: 15px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: space-between;
     padding: 20px;
     text-align: center;
-    color: #383838;
+    color: #ffffff;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-section{
-    width:100%;
+/* Section for Messages */
+section {
+    width: 100%;
+    flex: 1;
+    overflow: auto;
+    padding: 10px;
 }
 
-section.populated{
+/* Scrollable Message Section */
+section.populated {
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    overflow: scroll;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ffffff #16213e;
 }
-.starter-text{
-    padding: 0 80px;
+
+/* Starter Text */
+.starter-text {
+    padding: 0 40px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #dcdcdc;
 }
-form{
-    height: 50px;
-    width: 100%;
+
+/* Chat Form */
+form {
     display: flex;
-    border-top: #828282 solid 2px;
-    padding-top: 20px;
-    border-radius: 0 0 10px 10px;
-    overflow: hidden;
+    width: 100%;
+    border-top: 2px solid #4e4e50;
+    padding: 10px 0;
+}
+
+/* Input Box */
+input.question-box {
+    width: 85%;
+    padding: 12px;
+    font-size: 15px;
+    border: none;
+    border-radius: 5px 0 0 5px;
+    background: #0f3460;
+    color: #ffffff;
+    outline: none;
+}
+
+/* Submit Button */
+input[type=submit] {
+    width: 15%;
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    border: none;
+    color: #ffffff;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0 5px 5px 0;
+    transition: background 0.3s ease;
+}
+
+input[type=submit]:hover {
+    background: linear-gradient(135deg, #ff4b2b, #ff416c);
+}
+
+/* Glowing Border for Inputs */
+input.question-box:focus {
+    box-shadow: 0 0 10px rgba(255, 65, 108, 0.8);
+}
+
+/* Customize Scrollbar */
+section.populated::-webkit-scrollbar {
+    width: 8px;
+}
+
+section.populated::-webkit-scrollbar-track {
+    background: #1a1a2e;
+}
+
+section.populated::-webkit-scrollbar-thumb {
+    background: #ff416c;
+    border-radius: 10px;
+}
+input:focus{
+    outline: none;
+}
+.loader{
+    margin: 10px;
+    width: 60px;
+    aspect-ratio: 4;
+    background: 
+    no-repeat radial-gradient(circle closest-side,#383838 90%,#0000) 0 50%,
+    no-repeat radial-gradient(circle closest-side,#383838 90%,#0000) 50% 50%,
+    no-repeat radial-gradient(circle closest-side,#383838 90%,#0000) 100% 50%;
+    ;
+    background-size:calc(100%/3) 100%;
+    animation: loading 1s infinite linear;
+}
+
+@keyframes loading{
+    33%{ background-size: calc(100%/3) 100%,calc(100%/3) 100%;}
+    33%{ background-size: calc(100%/3) 100%,calc(100%/3) 100%;}
+    33%{ background-size: calc(100%/3) 100%,calc(100%/3) 100%;}
 }

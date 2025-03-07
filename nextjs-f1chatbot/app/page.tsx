@@ -1,17 +1,93 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import f1GPTLogo from "./assets/F1gpt.png"  // Check this case carefully!
-import { useChat } from "ai/react"
-import { Message } from "ai"
-import Bubble from "./components/bubble"
-import LoadingBubble from "./components/LoadingBubble"
-import PromptSuggestionRow from "./components/PromptSuggestionRow"
+import Image from "next/image";
+import f1GPTLogo from "./assets/F1gpt.png";
+import { useState } from "react";
+import Bubble from "./components/Bubble";
+import LoadingBubble from "./components/LoadingBubble";
+import PromptSuggestionRow from "./components/PromptSuggestionRow";
+
+type Message = {
+    id: string;
+    content: string;
+    role: "user" | "assistant";
+};
 
 const Home = () => {
-    const { append, isLoading, messages, input, handleInputChange, handleSubmit } = useChat()
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [input, setInput] = useState<string>("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    const noMessages = messages.length === 0
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInput(e.target.value);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim()) return;
+
+        const userMessage: Message = { id: crypto.randomUUID(), content: input, role: "user" };
+        setMessages((prev) => [...prev, userMessage]);
+
+        setInput("");
+        setIsLoading(true);
+
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: [...messages, userMessage] }),
+            });
+
+            const responseText = await res.text();
+
+            const assistantMessage: Message = {
+                id: crypto.randomUUID(),
+                content: responseText,
+                role: "assistant",
+            };
+
+            setMessages((prev) => [...prev, assistantMessage]);
+        } catch (error) {
+            console.error("Failed to fetch response:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handlePrompt = (promptText: string) => {
+        const userMessage: Message = { id: crypto.randomUUID(), content: promptText, role: "user" };
+        setMessages((prev) => [...prev, userMessage]);
+        fetchResponse(promptText);
+    };
+
+    const fetchResponse = async (prompt: string) => {
+        setIsLoading(true);
+
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: [...messages, { id: crypto.randomUUID(), content: prompt, role: "user" }] }),
+            });
+
+            const responseText = await res.text();
+
+            const assistantMessage: Message = {
+                id: crypto.randomUUID(),
+                content: responseText,
+                role: "assistant",
+            };
+
+            setMessages((prev) => [...prev, assistantMessage]);
+        } catch (error) {
+            console.error("Failed to fetch response:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const noMessages = messages.length === 0;
 
     return (
         <main>
@@ -26,27 +102,28 @@ const Home = () => {
                             We hope you enjoy!
                         </p>
                         <br />
-                        {<PromptSuggestionRow/>}
+                        <PromptSuggestionRow onPromptClick={() => handlePrompt("Who won the 2023 F1 Championship?")} />
                     </>
                 ) : (
                     <>
-                        {/* Map messages onto text bubbles */}
-                        {<LoadingBubble/> }
+                        {messages.map((message, index) => (
+                            <Bubble key={`message-${index}`} message={message} />
+                        ))}
+                        {isLoading && <LoadingBubble />}
                     </>
                 )}
-                
             </section>
             <form onSubmit={handleSubmit}>
-                    <input
-                        className="question-box"
-                        onChange={handleInputChange}
-                        value={input}
-                        placeholder="Ask me something..."
-                    />
-                    <input type="submit" />
-                </form>
+                <input
+                    className="question-box"
+                    onChange={handleInputChange}
+                    value={input}
+                    placeholder="Ask me something..."
+                />
+                <button type="submit">Send</button>
+            </form>
         </main>
-    )
-}
+    );
+};
 
-export default Home
+export default Home;

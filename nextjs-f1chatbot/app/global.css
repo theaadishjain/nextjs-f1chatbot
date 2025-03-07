@@ -84,6 +84,11 @@ input.question-box {
     outline: none;
 }
 
+input:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(255, 65, 108, 0.8);
+}
+
 /* Submit Button */
 input[type=submit] {
     width: 15%;
@@ -100,11 +105,6 @@ input[type=submit]:hover {
     background: linear-gradient(135deg, #ff4b2b, #ff416c);
 }
 
-/* Glowing Border for Inputs */
-input.question-box:focus {
-    box-shadow: 0 0 10px rgba(255, 65, 108, 0.8);
-}
-
 /* Customize Scrollbar */
 section.populated::-webkit-scrollbar {
     width: 8px;
@@ -118,24 +118,98 @@ section.populated::-webkit-scrollbar-thumb {
     background: #ff416c;
     border-radius: 10px;
 }
-input:focus{
-    outline: none;
+
+/* Chat Bubbles */
+.bubble {
+    margin: 8px;
+    padding: 10px;
+    font-size: 15px;
+    border: none;
+    color: #383838;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    width: 80%;
+    text-align: left;
+    word-break: break-word;
 }
-.loader{
+
+.bubble.user {
+    border-radius: 20px 20px 0 20px;
+    background-color: #E1F4FFFF;
+    margin-left: auto;
+}
+
+.bubble.assistant {
+    border-radius: 20px 20px 20px 0;
+    background-color: #dce7ff;
+}
+
+/* Prompt Suggestions Row */
+.prompt-suggestion-row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Prompt Suggestion Button */
+.prompt-suggestion-button {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    background-color: #ffffff;
+    border-radius: 10px;
+    color: #383838;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+    white-space: nowrap;
+}
+
+.prompt-suggestion-button:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-3px);
+}
+
+/* Loader Animation */
+.loader {
     margin: 10px;
     width: 60px;
     aspect-ratio: 4;
     background: 
-    no-repeat radial-gradient(circle closest-side,#383838 90%,#0000) 0 50%,
-    no-repeat radial-gradient(circle closest-side,#383838 90%,#0000) 50% 50%,
-    no-repeat radial-gradient(circle closest-side,#383838 90%,#0000) 100% 50%;
-    ;
-    background-size:calc(100%/3) 100%;
+        no-repeat radial-gradient(circle closest-side, #383838 90%, #0000) 0 50%,
+        no-repeat radial-gradient(circle closest-side, #383838 90%, #0000) 50% 50%,
+        no-repeat radial-gradient(circle closest-side, #383838 90%, #0000) 100% 50%;
+    background-size: calc(100%/3) 100%;
     animation: loading 1s infinite linear;
 }
 
-@keyframes loading{
-    33%{ background-size: calc(100%/3) 100%,calc(100%/3) 100%;}
-    33%{ background-size: calc(100%/3) 100%,calc(100%/3) 100%;}
-    33%{ background-size: calc(100%/3) 100%,calc(100%/3) 100%;}
+@keyframes loading {
+    33% { background-size: calc(100%/3) 0, calc(100%/3) 100%, calc(100%/3) 100%; }
+    50% { background-size: calc(100%/3) 100%, calc(100%/3) 0, calc(100%/3) 100%; }
+    66% { background-size: calc(100%/3) 100%, calc(100%/3) 100%, calc(100%/3) 0; }
+}
+
+/* Responsive Handling */
+@media (max-width: 768px) {
+    main {
+        width: 95vw;
+        height: 90vh;
+        padding: 15px;
+    }
+
+    input.question-box {
+        font-size: 14px;
+    }
+
+    .prompt-suggestion-button {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .bubble {
+        width: 95%;
+        font-size: 14px;
+    }
 }

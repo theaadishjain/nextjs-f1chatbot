@@ -1,4 +1,3 @@
-// Enable Node.js runtime for compatibility with onnxruntime-node
 export const runtime = 'nodejs';
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -12,12 +11,10 @@ const {
     GOOGLE_API_KEY,
 } = process.env;
 
-// Initialize Gemini and DataStax clients
 const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY!);
 const client = new DataAPIClient(ASTRA_DB_APPLICATION_TOKEN!);
 const db = client.db(ASTRA_DB_API_ENDPOINT!, { namespace: ASTRA_DB_NAMESPACE! });
 
-// Function to generate embeddings using Hugging Face (local embeddings)
 async function generateEmbedding(text: string): Promise<number[]> {
     const { pipeline } = await import("@xenova/transformers");
     const embeddingPipeline = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
@@ -39,23 +36,23 @@ export async function POST(req: Request) {
 
         try {
             const embedding = await generateEmbedding(latestMessage);
-
             const collection = await db.collection(ASTRA_DB_COLLECTION!);
 
-            // Find relevant documents using vector search
-            const cursor = collection.find(null, {
-                sort: { $vector: embedding },
-                limit: 5,
-            });
+            const cursor = collection.find(
+                {},
+                {
+                    sort: { $vector: embedding },
+                    limit: 5
+                }
+            );
 
             const documents = await cursor.toArray();
             const docsMap = documents.map(doc => doc.text);
 
-            // Use only the first 300 characters from each document to save token space
             docContext = docsMap.map(text => text.substring(0, 300)).join("\n\n");
         } catch (err) {
             console.error("Error querying DB or generating embeddings:", err);
-            docContext = ""; // Continue with Gemini even if vector search fails
+            docContext = "";
         }
 
         const systemPrompt = `

@@ -3,6 +3,7 @@ const PromptSuggestionButton = ({ text, onClick }) => {
         <button
             className="prompt-suggestion-button"
             onClick={onClick}
+            suppressHydrationWarning
         >
             {text}
         </button>

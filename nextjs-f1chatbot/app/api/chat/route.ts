@@ -1,4 +1,6 @@
-import { NextRequest } from "next/server";
+// Enable Node.js runtime for compatibility with onnxruntime-node
+export const runtime = 'nodejs';
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { DataAPIClient } from "@datastax/astra-db-ts";
 
@@ -10,18 +12,21 @@ const {
     GOOGLE_API_KEY,
 } = process.env;
 
+// Initialize Gemini and DataStax clients
 const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY!);
 const client = new DataAPIClient(ASTRA_DB_APPLICATION_TOKEN!);
 const db = client.db(ASTRA_DB_API_ENDPOINT!, { namespace: ASTRA_DB_NAMESPACE! });
 
+// Function to generate embeddings using Hugging Face (local embeddings)
 async function generateEmbedding(text: string): Promise<number[]> {
-    const { pipeline } = await import("@xenova/transformers");  // Only loads on the server
-    const extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
-    const output = await extractor(text, { pooling: "mean", normalize: true });
+    const { pipeline } = await import("@xenova/transformers");
+    const embeddingPipeline = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+    const output = await embeddingPipeline(text, { pooling: "mean", normalize: true });
+
     return Array.from(output.data);
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
     try {
         const { messages } = await req.json();
         const latestMessage = messages?.[messages.length - 1]?.content || "";
@@ -34,19 +39,23 @@ export async function POST(req: NextRequest) {
 
         try {
             const embedding = await generateEmbedding(latestMessage);
+
             const collection = await db.collection(ASTRA_DB_COLLECTION!);
 
+            // Find relevant documents using vector search
             const cursor = collection.find(null, {
                 sort: { $vector: embedding },
                 limit: 5,
             });
 
             const documents = await cursor.toArray();
-            const docsMap = documents.map((doc) => doc.text);
-            docContext = docsMap.map((text) => text.substring(0, 300)).join("\n\n");
+            const docsMap = documents.map(doc => doc.text);
+
+            // Use only the first 300 characters from each document to save token space
+            docContext = docsMap.map(text => text.substring(0, 300)).join("\n\n");
         } catch (err) {
             console.error("Error querying DB or generating embeddings:", err);
-            docContext = "";  // Continue even if vector search fails
+            docContext = ""; // Continue with Gemini even if vector search fails
         }
 
         const systemPrompt = `
@@ -60,7 +69,7 @@ ${docContext || "No relevant context found."}
 ---
 
 Question: ${latestMessage}
-`;
+        `;
 
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -70,9 +79,11 @@ Question: ${latestMessage}
 
         const responseText = result.response?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a response.";
 
-        return new Response(responseText, { headers: { "Content-Type": "text/plain" } });
+        return new Response(responseText, {
+            headers: { "Content-Type": "text/plain" }
+        });
     } catch (err) {
-        console.error("Error:", err);
+        console.error("Error processing request:", err);
         return new Response("Internal Server Error", { status: 500 });
     }
 }

@@ -48,6 +48,7 @@ section {
 /* Scrollable Message Section */
 section.populated {
     height: 100%;
+    max-height: 100%; /* Ensures the scrollbar doesn't vanish */
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -127,9 +128,10 @@ section.populated::-webkit-scrollbar-thumb {
     border: none;
     color: #383838;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    width: 80%;
-    text-align: left;
+    max-width: 90%;
+    overflow-wrap: break-word;  /* Improved text breaking */
     word-break: break-word;
+    text-align: left;
 }
 
 .bubble.user {

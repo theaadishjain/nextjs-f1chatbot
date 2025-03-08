@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import f1GPTLogo from "./assets/F1gpt.png";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Bubble from "./components/Bubble";
 import LoadingBubble from "./components/LoadingBubble";
 import PromptSuggestionRow from "./components/PromptSuggestionRow";
@@ -17,6 +17,13 @@ const Home = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [messages]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInput(e.target.value);
@@ -92,7 +99,7 @@ const Home = () => {
     return (
         <main>
             <Image src={f1GPTLogo} width={250} alt="F1GPT" />
-            <section className={noMessages ? "" : "populated"}>
+            <section ref={chatContainerRef} className={noMessages ? "" : "populated chat-scrollable"}>
                 {noMessages ? (
                     <>
                         <p className="starter-text">
@@ -102,7 +109,7 @@ const Home = () => {
                             We hope you enjoy!
                         </p>
                         <br />
-                        <PromptSuggestionRow onPromptClick={() => handlePrompt("Who won the 2023 F1 Championship?")} />
+                        <PromptSuggestionRow onPromptClick={handlePrompt} />
                     </>
                 ) : (
                     <>
@@ -119,8 +126,14 @@ const Home = () => {
                     onChange={handleInputChange}
                     value={input}
                     placeholder="Ask me something..."
+                    suppressHydrationWarning
                 />
-                <button type="submit">Send</button>
+                <button 
+                    type="submit"
+                    suppressHydrationWarning
+                >
+                    Send
+                </button>
             </form>
         </main>
     );
